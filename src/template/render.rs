@@ -5,13 +5,16 @@ use cosmic::{
     iced_widget::{rich_text, span, text},
 };
 
-use super::{Segment, Template, Variable};
-use crate::{applet, data::Data};
+use crate::{
+    applet,
+    data::Data,
+    template::{Segment, Template, Variable},
+};
 
 impl Template {
     pub(crate) fn render<'a, Theme: text::Catalog + 'a>(
         &'a self,
-        data: &Data,
+        data: &'a Data,
         colors: &applet::ThemeColors,
     ) -> text::Rich<'a, applet::Message, Theme> {
         let spans: Vec<_> = self
@@ -26,58 +29,65 @@ impl Template {
                 Segment::Unknown(name) => span(format!("{{{name}}}")).color(colors.red),
             })
             .collect();
-
         rich_text(spans)
     }
 
-    fn resolve_variable(
+    fn resolve_variable<'data>(
         &self,
         var: Variable,
-        data: &Data,
+        data: &'data Data,
         colors: &applet::ThemeColors,
-    ) -> (Cow<'static, str>, Option<Color>) {
+    ) -> (Cow<'data, str>, Option<Color>) {
         match var {
             Variable::CpuUsage => match data.cpu_usage {
                 Some(v) => (
-                    format!("{v:.0}%").into(),
+                    format!("{v:>2.0}%").into(),
                     colors.threshold(v as f64, 50.0, 80.0),
                 ),
                 None => ("--%".into(), None),
             },
             Variable::RamUsage => match data.ram_usage {
                 Some(v) => (
-                    format!("{v}%").into(),
+                    format!("{v:>2}%").into(),
                     colors.threshold(v as f64, 50.0, 80.0),
                 ),
                 None => ("--%".into(), None),
             },
             Variable::CpuTemp => match data.cpu_temp {
                 Some(t) => (
-                    format!("{t:.0}°C").into(),
+                    format!("{t:>2.0}°C").into(),
                     colors.threshold(t as f64, 60.0, 80.0),
                 ),
                 None => ("--°C".into(), None),
             },
             Variable::GpuTemp => match data.gpu_temp {
                 Some(t) => (
-                    format!("{t:.0}°C").into(),
+                    format!("{t:>2.0}°C").into(),
                     colors.threshold(t as f64, 60.0, 85.0),
                 ),
                 None => ("--°C".into(), None),
             },
             Variable::GpuUsage => match data.gpu_usage {
-                Some(u) => (
-                    format!("{u}%").into(),
-                    colors.threshold(u as f64, 50.0, 80.0),
+                Some(v) => (
+                    format!("{v:>2}%").into(),
+                    colors.threshold(v as f64, 50.0, 80.0),
                 ),
                 None => ("--%".into(), None),
             },
             Variable::DlSpeed => match data.download_speed {
-                Some(s) => (format!("{s:.2}").into(), None),
-                None => ("--".into(), None),
+                Some(s) => (format!("{s:4.1}").into(), None),
+                None => (" -.-".into(), None),
             },
             Variable::UlSpeed => match data.upload_speed {
-                Some(s) => (format!("{s:.2}").into(), None),
+                Some(s) => (format!("{s:4.1}").into(), None),
+                None => (" -.-".into(), None),
+            },
+            Variable::PublicIpv4 => match &data.public_ipv4 {
+                Some(ip) => (ip.into(), None),
+                None => ("--".into(), None),
+            },
+            Variable::PublicIpv6 => match &data.public_ipv6 {
+                Some(ip) => (ip.into(), None),
                 None => ("--".into(), None),
             },
         }

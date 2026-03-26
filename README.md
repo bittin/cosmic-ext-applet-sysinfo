@@ -16,6 +16,7 @@
 - **CPU temperature** — reads from common thermal sensors via sysinfo
 - **GPU temperature** — reads from sysinfo components (AMD/Intel), falls back to `nvidia-smi` for NVIDIA
 - **GPU usage** — reads from sysfs (`gpu_busy_percent`), falls back to `nvidia-smi` for NVIDIA
+- **Public IPv4 / IPv6** — fetches your public IP addresses via `curl` (using [icanhazip.com](https://icanhazip.com)), cached for 5 minutes
 - **Color-coded values** — metrics change color (normal → yellow → red) based on severity using COSMIC theme colors
 
 ## Display Template
@@ -43,6 +44,8 @@ CPU {cpu_usage} RAM {ram_usage} ↓{dl_speed}M/s ↑{ul_speed}M/s
 | `{gpu_usage}` | GPU usage % | `3%` |
 | `{dl_speed}` | Download speed in MB/s (2 decimals) | `1.23` |
 | `{ul_speed}` | Upload speed in MB/s (2 decimals) | `0.45` |
+| `{pub_ipv4}` | Public IPv4 address | `203.0.113.1` |
+| `{pub_ipv6}` | Public IPv6 address | `2001:db8::1` |
 
 When a sensor is not available, it shows `--` (e.g. `--°C`, `--%`).
 
@@ -80,9 +83,9 @@ CPU {cpu_temp} GPU {gpu_temp}
 ```
 → `CPU 51°C GPU 48°C`
 
-## Color Coding
+## Colour Coding
 
-Values are automatically color-coded using COSMIC theme colors:
+Values are automatically colour-coded using COSMIC theme colours:
 
 | Metric | Normal | Yellow | Red |
 |---|---|---|---|
@@ -92,7 +95,7 @@ Values are automatically color-coded using COSMIC theme colors:
 | GPU temp | < 60°C | 60–85°C | ≥ 85°C |
 | GPU usage | < 50% | 50–80% | ≥ 80% |
 
-Download and upload speeds are not color-coded (high speed is not a problem).
+Download/upload speeds and public IPs are not colour-coded.
 
 ## GPU Monitoring
 
@@ -100,39 +103,11 @@ GPU temperature and usage are read using sysinfo components and sysfs for AMD/In
 
 `nvidia-smi` is an optional dependency — GPU metrics will simply show `--` if it is not installed and sysfs data is unavailable.
 
-## Installation
+## Public IP
 
-### Flatpak
+Public IPv4 and IPv6 addresses are fetched using `curl` from [icanhazip.com](https://icanhazip.com) (Cloudflare). Results are cached for 5 minutes.
 
-Depending on how you've installed COSMIC Desktop, the Sysinfo applet may show up in your app store by default. In COSMIC Store it should be under the "COSMIC Applets" category.
-
-If the applet does not show up in your app store, you'll need to add `cosmic-flatpak` as a source:
-
-```sh
-flatpak remote-add --if-not-exists --user cosmic https://apt.pop-os.org/cosmic/cosmic.flatpakrepo
-```
-
-Then, proceed to your preferred app store and search for Sysinfo applet.
-
-### Manual
-
-The applet can be installed using the following steps:
-
-```sh
-sudo apt install libxkbcommon-dev just
-git clone https://github.com/cosmic-utils/cosmic-ext-applet-sysinfo.git
-cd cosmic-ext-applet-sysinfo
-just build
-sudo just install
-```
-
-`libxkbcommon-dev` is required by `smithay-client-toolkit`
-
-### Arch Linux
-
-On Arch Linux, the applet can be installed using the PKGBUILD [`cosmic-ext-applet-sysinfo-git`](https://aur.archlinux.org/packages/cosmic-ext-applet-sysinfo-git), available on the [AUR](https://wiki.archlinux.org/index.php/Arch_User_Repository).
-
----
+`curl` is required for this feature — IP variables will show `--` if it is not installed or the network is unavailable.
 
 ## Network Interface Detection & Configuration
 
@@ -172,7 +147,37 @@ None
 - Without configuration: all physical interfaces are monitored
 - For hotplugged devices (10s rescan interval), prefer `exclude_interfaces` as interface names may be unpredictable
 
----
+## Installation
+
+### Flatpak
+
+Depending on how you've installed COSMIC Desktop, the Sysinfo applet may show up in your app store by default. In COSMIC Store it should be under the "COSMIC Applets" category.
+
+If the applet does not show up in your app store, you'll need to add `cosmic-flatpak` as a source:
+
+```sh
+flatpak remote-add --if-not-exists --user cosmic https://apt.pop-os.org/cosmic/cosmic.flatpakrepo
+```
+
+Then, proceed to your preferred app store and search for Sysinfo applet.
+
+### Manual
+
+The applet can be installed using the following steps:
+
+```sh
+sudo apt install libxkbcommon-dev just
+git clone https://github.com/cosmic-utils/cosmic-ext-applet-sysinfo.git
+cd cosmic-ext-applet-sysinfo
+just build
+sudo just install
+```
+
+`libxkbcommon-dev` is required by `smithay-client-toolkit`
+
+### Arch Linux
+
+On Arch Linux, the applet can be installed using the PKGBUILD [`cosmic-ext-applet-sysinfo-git`](https://aur.archlinux.org/packages/cosmic-ext-applet-sysinfo-git), available on the [AUR](https://wiki.archlinux.org/index.php/Arch_User_Repository).
 
 ## Uninstall
 
